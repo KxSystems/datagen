@@ -1,6 +1,6 @@
 # Module for Generating Demo Data
 
-This module provides functions for generating synthetic data for various domains. These modules are designed to simulate real-world scenarios and datasets, enabling users to run queries (q-sql, SQL and PyKX) on q data.
+This module provides functions for generating synthetic data for various domains. These modules are designed to simulate real-world scenarios and datasets, enabling users to run queries (q-sql, SQL and KDB‑X Python) on q data.
 
 ## API Documentation
 

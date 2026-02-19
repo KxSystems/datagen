@@ -30,11 +30,11 @@ The three generated tables require approximately 21 MB of memory.
 
 You can pass a dictionary with custom parameters to override the defaults in `getInMemoryTables`. The available keys are:
 
-   * `compNr` (default: 1000): The number of computers.
-   * `frequency` (default: one minute, i.e., 00:01:00): The frequency at which computers report CPU usage. The time column captures the update arrival time, which may slightly differ from the intended CPU utilization timestamp.
-   * `avgIncNrPerComputer` (default: 2): The average number of incidents per computer.
-   * `start` (default: midnight, i.e., 00:00:00): The start time for metrics capture.
-   * `end` (default: .z.T): The end time for metrics capture.
+- `compNr` (default: 1000): The number of computers.
+- `frequency` (default: one minute, i.e., 00:01:00): The frequency at which computers report CPU usage. The time column captures the update arrival time, which may slightly differ from the intended CPU utilization timestamp.
+- `avgIncNrPerComputer` (default: 2): The average number of incidents per computer.
+- `start` (default: midnight, i.e., 00:00:00): The start time for metrics capture.
+- `end` (default: .z.T): The end time for metrics capture.
 
 Example Usage
 

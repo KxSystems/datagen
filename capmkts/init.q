@@ -123,7 +123,7 @@ makeDailyVolumes: {[dateNr:`j]
 
 generateTables: {[volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade:`j); (exchopen; exchclose); symNr:`j; dateidx:`j]
   (qx; qb; qa; qbb; qba; qp): batch[volumes[dateidx]; prices[;dateidx]; prices[; dateidx+1];  symNr];
-  r:asc (`time$exchopen)+floor (exchclose-exchopen)*volprof count qx;
+  r:asc (`time$exchopen)+floor (`time$exchclose-exchopen)*volprof count qx;
   cx:volumes[dateidx]?quotesPerTrade+nbboPerTrade;
   cn:count n:where cx=0;
   sp:1=cn?20;

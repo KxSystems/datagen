@@ -108,5 +108,5 @@ buildPersistedDB["testdb"; 5000; ([quotesPerTrade: 3; nbboPerTrade: 5])]
 
 ## Resource requirements
 
-   * The kdb+ objects (tables and dictionary) generated with the default getInMemoryTables parameters require 1.3 MB of memory.
-   * Persisted data generated with the default parameters occupies 377 MB of disk space.
+- The kdb+ objects (tables and dictionary) generated with the default getInMemoryTables parameters require 1.3 MB of memory.
+- Persisted data generated with the default parameters occupies 377 MB of disk space.

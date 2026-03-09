@@ -24,7 +24,8 @@ DEFAULTS: ([
 
 DEFAULTS_PERSISTED: ([start: .z.D-31; end: .z.D-1;
        holidays: ("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25");
-       segmentNr: 0; segmentPattern: "/tmp/mnt/ssd{}/testdata"])
+       segmentNr: 0; segmentPattern: "/tmp/mnt/ssd{}/testdata";
+       linked: 0b])
 
 /utils
 PI:acos -1
@@ -150,11 +151,13 @@ generateTables: {[volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade:`j); (exc
   (trade; quote; nbbo)
   }
 
-generateAndSave: {[dbpref:`C; dst:`s; generator; dates:`D; dateidx:`j]
+generateAndSave: {[dbpref:`C; dst:`s; generator; linked:`b;dates:`D; dateidx:`j]
   d: dates dateidx;
 
-  (.Q.dd[hsym `$dbpref, "/", string d] each `$("trade/"; "quote/"; "nbbo/")) set' .Q.en[dst] each
-    (trade;;): {update sym:`p#sym from `sym xasc x} each generator dateidx;
+  tlist: (trade;;): {update sym:`p#sym from `sym xasc x} each generator dateidx;
+  if[linked;
+    tlist: {[s;t] update master:`master!s?sym from t}[MASTER `sym] each tlist];
+  (.Q.dd[hsym `$dbpref, "/", string d] each `$("trade/"; "quote/"; "nbbo/")) set' .Q.en[dst] each tlist;
 
   `date xcols 0!select date: d, open:first price,high:max price,
     low:min price,close:last price,price:sum price*size,sum size by sym from trade
@@ -191,8 +194,8 @@ getInMemoryTables: ('[{[params]
   symNr: count MASTER;
   volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p `nbboPerTrade) * makeDailyVolumes 1;
   prices: makePrices 1;
-  ({update sym: `g#sym from x} each generateTables[volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; 0]),
-    (MASTER; EXNAMES)
+  ({update `g#sym from x} each generateTables[volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; 0]),
+    (`sym xkey MASTER; EXNAMES)
   }; enlist]);
 
 // @kind function
@@ -228,7 +231,7 @@ buildPersistedDB: ('[{[params]
     ssr[p[`segmentPattern];"{}"] each string til[dateNr] mod p `segmentNr];
     dateNr#enlist dst];
   dst: hsym `$dst;
-  td: raze dbprefs generateAndSave[; dst; generator; dates; ]' til dateNr;
+  td: raze dbprefs generateAndSave[; dst; generator; p `linked; dates; ]' til dateNr;
 
   .Q.dd[dst;`daily] set .Q.en[dst] td;
   .Q.dd[dst;`master] set .Q.en[dst] MASTER;

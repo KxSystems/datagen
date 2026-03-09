@@ -87,6 +87,13 @@ testPersistedTables dbdir;
 system "cd ", PWD;
 system "rm -rf ", dbdir;
 
+buildPersistedDB[dbdir; ([linked: 1b])];
+testPersistedTables dbdir;
+if[not all `master = {exec first f from meta[x] where c=`master} each (trade; quote; nbbo);
+  fail "linked column check failure"];
+system "cd ", PWD;
+system "rm -rf ", dbdir;
+
 res: .[buildPersistedDB; (dbdir; ()!(); `dummyparameter); ::]
 if[not res like "Too many parameters passed to buildPersistedDB";
   fail "Too many parameters check failure"];

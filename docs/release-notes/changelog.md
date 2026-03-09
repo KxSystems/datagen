@@ -2,6 +2,16 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 1.3.0
+
+**Release Date**: 2026-03-06
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - MASTER is keyed for `getInMemoryTables`
+  - `buildPersistedDB` option to have linked column `master` for tables `trade`, `quote` and `nbbo` on column `sym` to table `master`
+
 ## 1.2.0
 
 **Release Date**: 2026-03-03

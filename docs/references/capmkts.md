@@ -111,10 +111,12 @@ The following parameters can be customized using a dictionary passed to `getInMe
 | `quotesPerTrade` | `10` | The number of quotes generated per trade. |
 | `nbboPerTrade` | `3` | The number of NBBO entries generated per trade. |
 
-
 In addition, `buildPersistedDB` accepts:
 
-- `holidays` (default: `("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25")`): A list of holidays (in addition to weekends) for which no trading data is generated. There is no trading on some exchanges on weekends and on public holidays. This can challenge some algorithms and cause issues in downstream system. Holiday support was added to reflect this condition. Only `buildPersistedDB` considers this parameter.
+| Parameter | Default | Description |
+| :--- | :--- | :--- |
+| `linked` | 0b | 1b to create linked column `master` for tables `trade`, `quote` and `nbbo` |
+| `holidays` | `("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25")` | A list of holidays (in addition to weekends) for which no trading data is generated. There is no trading on some exchanges on weekends and on public holidays. This can challenge some algorithms and cause issues in downstream system. Holiday support was added to reflect this condition. Only `buildPersistedDB` considers this parameter. |
 
 #### Example Usage
 
@@ -127,7 +129,7 @@ To customize the settings, you can pass a dictionary as shown below:
 or
 
 ```q
-buildPersistedDB["/tmp/testdb"; ([tradesPerDay: 5000; quotesPerTrade: 3; nbboPerTrade: 5])]
+buildPersistedDB["/tmp/testdb"; ([tradesPerDay: 5000; linked: 1b])]
 ```
 
 ## Resource requirements

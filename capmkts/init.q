@@ -233,7 +233,7 @@ buildPersistedDB: ('[{[params]
   dst: hsym `$dst;
   td: raze dbprefs generateAndSave[; dst; generator; p `linked; dates; ]' til dateNr;
 
-  .Q.dd[dst;`daily] set .Q.en[dst] td;
+  .Q.dd[dst;`daily`] set .Q.en[dst] td;
   .Q.dd[dst;`master] set .Q.en[dst] MASTER;
   .Q.dd[dst;`exnames] set EXNAMES;
   if[p `segmentNr; (` sv dst,`par.txt) 0: distinct dbprefs];

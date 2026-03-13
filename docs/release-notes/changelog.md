@@ -2,6 +2,15 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 1.3.1
+
+**Release Date**: 2026-03-13
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - table daily is splayed instead of flat
+
 ## 1.3.0
 
 **Release Date**: 2026-03-06

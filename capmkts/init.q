@@ -33,7 +33,7 @@ accum:{prds 1.0,-1 _ x}
 int01:{(til x)%x-1}
 limit:{(neg x)|x & y}
 minmax:{(min x;max x)}
-normalrand:{(cos 2 * PI * x ? 1f) * sqrt neg 2 * log x ? 1f}
+normalrand:{$[x=2*n:x div 2;raze sqrt[-2*log n?1f]*/:(sin;cos)@\:(2*PI)*n?1f;-1_.z.s 1+x]}
 rnd:{0.01*floor 0.5+x*100}
 xrnd:{exp x * limit[2] normalrand y}
 shiv:{(last x)&(first x)|asc x+-2+(count x)?5}
@@ -72,7 +72,7 @@ volprof:{[x:`j]
   b:(c?1.0) xexp p;
   e:2-(c?1.0) xexp p;
   m:(x-2*c)?1.0;
-  {(neg count x)?x} m,0.5*b,e
+  m,0.5*b,e
   }
 
 VEX:1.0005         / average volume growth per day
@@ -87,7 +87,7 @@ batch:{[len:`j; p0; p1:`F; symNr:`j]
   qa:rnd len?1.0;
   qbb:qb & -0.02 + rnd len?1.0;
   qba:qa & -0.02 + rnd len?1.0;
-  n:where each qx=/:til symNr;
+  n:(group qx) til symNr;
   s:p0*accum each d n;
   s:s + (p1-last each s)*{int01 count x} each s;
   qp:len#0.0;

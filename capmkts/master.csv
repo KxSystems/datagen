@@ -1,28 +1,52 @@
-ticker,description,issueprice
-AMZN,"Amazon.com, Inc.",92
-AMD,ADVANCED MICRO DEVICES,33
-AIG,AMERICAN INTL GROUP INC,27
-AAPL,APPLE INC COM STK,84
-BAC,Bank of America Corporation,36
-CCL,Carnival Corporation & plc,8
-DELL,DELL INC,12
-DOW,DOW CHEMICAL CO,20
-GOOG,GOOGLE INC CLASS A,72
-HPQ,HEWLETT-PACKARD CO,36
-INTC,INTEL CORP,51
-IBM,INTL BUSINESS MACHINES CORP,42
-META,"Meta Platforms, Inc.",90
-MSFT,MICROSOFT CORP,9
-NIO,NIO Inc.,29
-NVDA,NVIDIA Corporation,132
-ORCL,ORACLE CORPORATION,35
-PEP,PEPSICO INC,22
-PRU,PRUDENTIAL FINANCIAL INC.,59
-SNAP,Snap Inc.,9
-SBUX,STARBUCKS CORPORATION,5
-SOFI,"SoFi Technologies, Inc.",214
-T,AT&T Inc.,18
-TSLA,"Tesla, Inc.",63
-TWTR,"Twitter, Inc.",53
-TXN,TEXAS INSTRUMENTS,18
-XPEV,XPeng Inc.,6
+sym,description,cusip,securityType,testFlag,ex,roundLot,issueprice
+AAPL,Apple Inc.,037833100,A,0,Q,100,255.44
+AGEN,Agenus Inc.,00847G804,A,0,Q,100,3.99
+AIG,"American International Group, Inc.",026874784,A,0,N,100,79.86
+AMD,Advanced Micro Devices,007903107,A,0,Q,100,165.58
+AMTM,"Amentum Holdings, Inc.",023939101,A,0,N,100,24.99
+AMZN,Amazon.Com Inc,023135106,A,0,Q,100,222
+ARBE.W,Arbe Robotics Ltd. Warrant,M1R95N118,C,0,Q,100,0.295
+ASND,Ascendis Pharma A/S American Depositary Shares,04351P101,H,0,Q,100,203.16
+BAC,Bank of America Corporation,060505104,A,0,N,100,50.84
+BIIB,Biogen Inc. Common Stock,09062X103,A,0,Q,100,155.25
+BSBK,Bogota Financial Corp. Common Stock,097235105,A,0,Q,100,9.11
+CAMP,CAMP4 Therapeutics Corporation Common Stock,13463J101,A,0,Q,100,2.91
+CCL,Carnival Corporation,143658300,A,0,N,100,28.56
+CPRT,Copart Inc,217204106,A,0,Q,100,45.17
+CUZ,Cousins Properties Inc.,222795502,A,0,N,100,29.06
+DELL,Dell Technologies Inc.,24703L202,A,0,N,100,150.21
+DERM,Journey Medical Corporation Common Stock,48115J109,A,0,Q,100,7.24
+DOW,Dow Inc.,260557103,A,0,N,100,23.1
+EMA,Emera Incorporated,290876101,A,0,N,100,47.51
+FMTM,MarketDesk Focused U.S. Momentum ETF,02072Q762,ETF,0,Q,100,30.35
+GOGO,Gogo Inc.,38046C109,A,0,Q,100,8.49
+GOOG,Alphabet Inc. Class C Capital Stock,02079K107,A,0,Q,100,245.6
+HPQ,HP Inc.,40434L105,A,0,N,100,26.84
+IBM,International Business Machines Corporation,459200101,A,0,N,100,286
+INTC,Intel Corp,458140100,A,0,Q,100,36.03
+IONS,"Ionis Pharmaceuticals, Inc. Common Stock",462222100,A,0,Q,100,65.8
+ISHG,iShares International Treasury Bond ETF,464288125,ETF,0,Q,100,76.54
+ITOL,Tema International Durable Quality ETF,87975E818,ETF,0,Z,100,25.4057
+META,"Meta Platforms, Inc. Class A Common Stock",30303M102,A,0,Q,100,722.8
+MSFT,Microsoft Corp,594918104,A,0,Q,100,520.33
+MVIS,Microvision Inc,594960304,A,0,Q,100,1.28
+NIO,"NIO Inc. American depositary shares, each representing one Class A ordinary share",62914V106,H,0,N,100,7.81
+NVDA,Nvidia Corp,67066G104,A,0,Q,100,187.87
+ORCL,Oracle Corp,68389X105,A,0,N,100,289.95
+PBW,Invesco WilderHill Clean Energy ETF,46137V134,ETF,0,P,100,30.52
+PEP,"PepsiCo, Inc.",713448108,A,0,Q,100,143.06
+PRU,"Prudential Financial, Inc.",744320102,A,0,N,100,103.02
+RBCA.A,Republic Bancorp Inc/KY,760281204,A,0,Q,100,71.35
+SBUX,Starbucks Corp,855244109,A,0,Q,100,84.4
+SNAP,Snap Inc.,83304A106,A,0,N,100,7.7
+SOFI,"SoFi Technologies, Inc. Common Stock",83406F102,A,0,Q,100,26.13
+T,AT&T Inc.,00206R102,A,0,N,100,27.58
+TSLA,"Tesla, Inc. Common Stock",88160R101,A,0,Q,100,463.29
+TXN,Texas Instruments Incorporated,882508104,A,0,Q,100,181.28
+TZOO,Travelzoo Common Stock,89421Q205,A,0,Q,100,9.88
+VBK,Vanguard Small-Cap Growth ETF,922908595,ETF,0,P,100,299.25
+VDE,Vanguard Energy ETF,92204A306,ETF,0,P,100,126.05
+VWID,Virtus WMC International Dividend ETF,26923G848,ETF,0,Z,100,33.86
+XBIT,XBiotech Inc,98400H102,A,0,Q,100,2.64
+XPEV,"XPeng Inc. American depositary shares, each representing two Class A ordinary shares",98422D105,H,0,N,100,24.22
+YIBO,Planet Image International Limited Class A Ordinary Shares,G7122D102,A,0,Q,100,1.38

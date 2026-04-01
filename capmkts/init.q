@@ -1,4 +1,4 @@
-MASTER: `sym xcol ("SSI"; enlist csv) 0: .Q.rp `:::master.csv
+MASTER: `sym xcol ("S*SSBCHF"; enlist csv) 0: .Q.rp `:::master.csv
 
 COND: " BCEFHIKLMNOPQRTUVXZ456789";  / Sale Condition
 MODE: " 456789BCEFHIKLMNOPQRTUVXZ";
@@ -16,6 +16,7 @@ TRADEDON: (neg 1|count[MASTER]?count EXNAMES)?\:key EXNAMES
 / Default parameters for data generation
 DEFAULTS: ([
   tradesPerDay: 1000;
+  tbls: `trade`quote`nbbo;
   exchopen: 09:30;   / exchange open time
   exchclose: 16:00;  / exchange close time
   quotesPerTrade: 10;     / number of quotes per trade
@@ -23,9 +24,11 @@ DEFAULTS: ([
   ]);      / number of nbbo per trade
 
 DEFAULTS_PERSISTED: ([start: .z.D-31; end: .z.D-1;
-       holidays: ("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25");
-       segmentNr: 0; segmentPattern: "/tmp/mnt/ssd{}/testdata";
-       linked: 0b])
+  tbls: `trade`quote`nbbo`daily;
+  mastertype: `flat;
+  holidays: ("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25");
+  segmentNr: 0; segmentPattern: "/tmp/mnt/ssd{}/testdata";
+  linked: 0b])
 
 /utils
 PI:acos -1
@@ -136,31 +139,38 @@ makeDailyVolumes: {[dateNr:`j]
   0.05|2&v*a+((reciprocal last v)-a)*int01 dateNr
   }
 
-generateTables: {[volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade:`j); (exchopen; exchclose); symNr:`j; dateidx:`j]
+generateTables: {[tbls: `S; volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade:`j); (exchopen; exchclose); symNr:`j; dateidx:`j]
   (qx; qb; qa; qbb; qba; qp): batch[volumes[dateidx]; prices[;dateidx]; prices[; dateidx+1];  symNr];
   r:asc (`timespan$exchopen)+floor (`timespan$exchclose-exchopen)*volprof count qx;
   cx:volumes[dateidx]?quotesPerTrade+nbboPerTrade;
   cn:count n:where cx=0;
   sp:1=cn?20;
   s: MASTER `sym;
-  trade: ([]sym:s qx n;time:`s#shiv r n;price:qp n;size:vol cn;stop:sp;cond:cn?COND;ex:rand each TRADEDON qx n);
-  cn:count n:where cx<quotesPerTrade;
-  quote: ([]sym:s qx n;time:`s#r n;bid:(qp-qb)n;ask:(qp+qa)n;bsize:vol cn;asize:vol cn;mode:cn?MODE;ex:rand each TRADEDON qx n);
-  cn:count n:where cx>=quotesPerTrade;
-  nbbo: ([]sym:s qx n;time:`s#r n;bid:(qp-qbb)n;ask:(qp+qba)n;bsize:vol cn;asize:vol cn);
-  (trade; quote; nbbo)
+  res: ();
+  if[`trade in tbls;
+    res,: enlist ([]sym:s qx n;time:`s#shiv r n;price:qp n;size:vol cn;stop:sp;cond:cn?COND;ex:rand each TRADEDON qx n)];
+
+  if[`quote in tbls;
+    cn:count n:where cx<quotesPerTrade;
+    res,: enlist ([]sym:s qx n;time:`s#r n;bid:(qp-qb)n;ask:(qp+qa)n;bsize:vol cn;asize:vol cn;mode:cn?MODE;ex:rand each TRADEDON qx n)];
+
+  if[`nbbo in tbls;
+    cn:count n:where cx>=quotesPerTrade;
+    res,: enlist ([]sym:s qx n;time:`s#r n;bid:(qp-qbb)n;ask:(qp+qba)n;bsize:vol cn;asize:vol cn)];
+  res
   }
 
-generateAndSave: {[dbpref:`C; dst:`s; generator; linked:`b;dates:`D; dateidx:`j]
+generateAndSave: {[dbpref:`C; tbls: `S; dst:`s; generator; linked:`b;dates:`D; dateidx:`j]
   d: dates dateidx;
 
-  tlist: (trade;;): {update sym:`p#sym from `sym xasc x} each generator dateidx;
+  tlist: {update sym:`p#sym from `sym xasc x} each generator dateidx;
   if[linked;
     tlist: {[s;t] update master:`master!s?sym from t}[MASTER `sym] each tlist];
-  (.Q.dd[hsym `$dbpref, "/", string d] each `$("trade/"; "quote/"; "nbbo/")) set' .Q.en[dst] each tlist;
+  (.Q.dd[hsym `$dbpref, "/", string d] each tbls ,' `) set' .Q.en[dst] each tlist;
 
-  `date xcols 0!select date: d, open:first price,high:max price,
-    low:min price,close:last price,price:sum price*size,sum size by sym from trade
+  if[`trade ~ first tbls;
+    :`date xcols 0!select date: d, open:first price,high:max price,
+      low:min price,close:last price,price:sum price*size,sum size by sym from first tlist];
   }
 
 processOptParam:{[allowedKeys;optparam]
@@ -170,6 +180,10 @@ processOptParam:{[allowedKeys;optparam]
   if[99h = type optparam;
     unknownParams: (key optparam) except allowedKeys;
     if[count unknownParams; '"Unknown parameter(s): ", "," sv string unknownParams];
+    if[`tbls in key optparam;
+      optparam: (`tbls _ optparam), ([tbls: $[count optparam `tbls; (), optparam `tbls; `$()]]); / a symbol or a general empty list are also accepted
+      unknownTbls: optparam[`tbls] except `trade`quote`nbbo`daily;
+      if[count unknownTbls; '"Unknown table(s) in tbls parameter: ", "," sv string unknownTbls]];
     :optparam];
 
   '"A numeric or a dictionary is expected as optional parameter";
@@ -194,7 +208,7 @@ getInMemoryTables: ('[{[params]
   symNr: count MASTER;
   volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p `nbboPerTrade) * makeDailyVolumes 1;
   prices: makePrices 1;
-  ({update `g#sym from x} each generateTables[volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; 0]),
+  ({update `g#sym from x} each generateTables[p `tbls; volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; 0]),
     (`sym xkey MASTER; EXNAMES)
   }; enlist]);
 
@@ -219,22 +233,25 @@ buildPersistedDB: ('[{[params]
     '"Destination directory must be provided as first parameter to buildPersistedDB"];
   dst: first params;
   p: DEFAULTS, DEFAULTS_PERSISTED;
-  if[1 < count params; p,: processOptParam[key p; last params]];
+  if[1 < count params;
+    p,: processOptParam[key p; last params];
+    if[not p[`mastertype] in `flat`splayed;
+      '"Invalid mastertype parameter, expected `flat or `splayed"]];
 
   dateNr: count dates: getDates[p`start; p`end; p`holidays];
   symNr: count MASTER;
   volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p[`nbboPerTrade]) * makeDailyVolumes dateNr;
   prices: makePrices dateNr;
 
-  generator: generateTables[volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr];
+  generator: generateTables[p `tbls;volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr];
   dbprefs: $[p `segmentNr; [
     ssr[p[`segmentPattern];"{}"] each string til[dateNr] mod p `segmentNr];
     dateNr#enlist dst];
   dst: hsym `$dst;
-  td: raze dbprefs generateAndSave[; dst; generator; p `linked; dates; ]' til dateNr;
+  daily: raze dbprefs generateAndSave[;p[`tbls] except `daily; dst; generator; p `linked; dates; ]' til dateNr;
 
-  .Q.dd[dst;`daily`] set .Q.en[dst] td;
-  .Q.dd[dst;`master] set .Q.en[dst] MASTER;
+  if[all `daily`trade in p`tbls; .Q.dd[dst;`daily`] set .Q.en[dst] daily];
+  .Q.dd[dst;`master, $[p[`mastertype] ~ `splayed;`;()]] set .Q.en[dst] MASTER;
   .Q.dd[dst;`exnames] set EXNAMES;
   if[p `segmentNr; (` sv dst,`par.txt) 0: distinct dbprefs];
   }; enlist]);

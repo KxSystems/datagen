@@ -2,6 +2,17 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 1.4.0
+
+**Release Date**: 2026-04-01
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - option to specify the list of tables to create/persist
+  - more realistic and larger master table
+  - option to save master table splayed
+
 ## 1.3.2
 
 **Release Date**: 2026-03-30

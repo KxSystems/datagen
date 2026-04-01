@@ -106,6 +106,7 @@ The following parameters can be customized using a dictionary passed to `getInMe
 | Parameter | Default | Description |
 | :--- | :--- | :--- |
 | `tradesPerDay` | `1000` | The number of trades per day. |
+| `tbls` | `` `trade`quote`nbbo`` | tables to be generated besides other kdb+ objects like table `master` and dictionary `exnames` |
 | `exchopen` | `9:30` | The opening time of the exchange. No trades or quotes are generated before this time. |
 | `exchclose` | `16:00` | The closing time of the exchange. No trades or quotes are generated after this time. |
 | `quotesPerTrade` | `10` | The number of quotes generated per trade. |
@@ -115,7 +116,9 @@ In addition, `buildPersistedDB` accepts:
 
 | Parameter | Default | Description |
 | :--- | :--- | :--- |
-| `linked` | 0b | 1b to create linked column `master` for tables `trade`, `quote` and `nbbo` |
+| `tbls` | `` `trade`quote`nbbo`daily`` | tables to be persisted besides other kdb+ objects like table `master` and dictionary `exnames` |
+| `linked` | `0b` | `1b` to create linked column `master` for tables `trade`, `quote` and `nbbo` |
+| `mastertype` | `flat` | Type of the master table: `flat` or `splayed` |
 | `holidays` | `("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25")` | A list of holidays (in addition to weekends) for which no trading data is generated. There is no trading on some exchanges on weekends and on public holidays. This can challenge some algorithms and cause issues in downstream system. Holiday support was added to reflect this condition. Only `buildPersistedDB` considers this parameter. |
 
 #### Example Usage
@@ -130,6 +133,12 @@ or
 
 ```q
 buildPersistedDB["/tmp/testdb"; ([tradesPerDay: 5000; linked: 1b])]
+```
+
+or
+
+```q
+buildPersistedDB["/tmp/testdb"; ([tbls: `trade; mastertype: `splayed])]
 ```
 
 ## Resource requirements

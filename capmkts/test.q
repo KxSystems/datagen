@@ -25,7 +25,7 @@ testInMemoryTables: {[(trade; quote; nbbo; master; exnames)]
     fail "aj failed"];
   }
 
-testPersistedTables: {[dbdir]
+testPersistedTables: {[dbdir:`C]
   system "l ", dbdir;
   if[not all `daily`exnames`master`sym in key hsym `$dbdir;
     fail "Missing files from DB root"];
@@ -72,6 +72,8 @@ if[count select from trade where time<exchopen;
 if[count select from trade where time>exchclose;
   fail "trade after exchclose"];
 
+delete trade from `.;
+
 -1 "All in-memory tests passed";
 ///////////////////////////////////////////////////////////
 
@@ -79,6 +81,15 @@ if[count select from trade where time>exchclose;
 
 buildPersistedDB dbdir;
 testPersistedTables dbdir;
+if[not masterfile ~ key masterfile: hsym `$dbdir, "/master";
+  fail "master file type check failure: master table is not flat"];
+system "cd ", PWD;
+system "rm -rf ", dbdir;
+
+buildPersistedDB[dbdir; ([mastertype: `splayed])];
+testPersistedTables dbdir;
+if[masterfile ~ key masterfile: hsym `$dbdir, "/master";
+  fail "master file type check failure: master table is not splayed"];
 system "cd ", PWD;
 system "rm -rf ", dbdir;
 
@@ -91,6 +102,13 @@ buildPersistedDB[dbdir; ([linked: 1b])];
 testPersistedTables dbdir;
 if[not all `master = {exec first f from meta[x] where c=`master} each (trade; quote; nbbo);
   fail "linked column check failure"];
+system "cd ", PWD;
+system "rm -rf ", dbdir;
+
+buildPersistedDB[dbdir; ([tbls: `trade`quote])];
+system "l ", dbdir
+if[`master`trade`quote ~ tables[];
+  fail "tbls check failure"];
 system "cd ", PWD;
 system "rm -rf ", dbdir;
 

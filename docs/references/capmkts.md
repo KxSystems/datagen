@@ -34,6 +34,8 @@ To generate one month of **date-partitioned data** and store it in a directory (
 buildPersistedDB "/tmp/testdb"
 ```
 
+You can also pass the directory path as a symbol or as a file symbol (`` `:/tmp/testdb``).
+
 Once the data is generated, you can load it into a q session with 4 [worker threads](https://code.kx.com/kdb-x/reference/syscmds.html#s-number-of-secondary-threads) using the following command (or by `\l` in a running q session):
 
 ```bash
@@ -132,13 +134,13 @@ To customize the settings, you can pass a dictionary as shown below:
 or
 
 ```q
-buildPersistedDB["/tmp/testdb"; ([tradesPerDay: 5000; linked: 1b])]
+buildPersistedDB[`:/tmp/testdb; ([tradesPerDay: 5000; linked: 1b])]
 ```
 
 or
 
 ```q
-buildPersistedDB["/tmp/testdb"; ([tbls: `trade; mastertype: `splayed])]
+buildPersistedDB[`$"/tmp/testdb"; ([tbls: `trade; mastertype: `splayed])]
 ```
 
 ## Resource requirements

@@ -86,6 +86,20 @@ if[not masterfile ~ key masterfile: hsym `$dbdir, "/master";
 system "cd ", PWD;
 system "rm -rf ", dbdir;
 
+
+/ dbdir as symbol
+buildPersistedDB `$dbdir;
+testPersistedTables dbdir;
+system "cd ", PWD;
+system "rm -rf ", dbdir;
+
+/ dbdir as file symbol
+buildPersistedDB hsym `$dbdir;
+testPersistedTables dbdir;
+system "cd ", PWD;
+system "rm -rf ", dbdir;
+
+
 buildPersistedDB[dbdir; ([mastertype: `splayed])];
 testPersistedTables dbdir;
 if[masterfile ~ key masterfile: hsym `$dbdir, "/master";
@@ -124,14 +138,10 @@ res: .[buildPersistedDB; (dbdir; ([tradesPerDay: 2000; invalidkey: 3])); ::]
 if[not res like "Unknown parameter(s): invalidkey";
   fail "Invalid parameter check failure"];
 
-segdirs: first system "mktemp -d";
--1 "segmented directory pattern: ", segdirs,"{}";
-segmentNr: 4;
-buildPersistedDB[dbdir; ([tradesPerDay:2000; segmentNr; segmentPattern: segdirs,"{}"])];
-testPersistedTables dbdir;
+buildPersistedDB[dbdir, "/segmentdb"; ([segmentNr: 4; segmentPattern: dbdir, "/db{}"])];
+testPersistedTables dbdir, "/segmentdb";
 system "cd ", PWD;
 system "rm -rf ", dbdir;
-system "rm -rf ", " " sv segdirs,/:string til segmentNr;
 
 ///////////////////////////////////////////////////////////
 -1 "All persistent DB tests passed";

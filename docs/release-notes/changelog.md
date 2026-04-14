@@ -2,6 +2,15 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 1.4.1
+
+**Release Date**: 2026-04-14
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - `buildPersistedDB` also accepts a symbol or a file symbol as database directory
+
 ## 1.4.0
 
 **Release Date**: 2026-04-01

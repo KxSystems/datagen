@@ -160,13 +160,13 @@ generateTables: {[tbls: `S; volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade
   res
   }
 
-generateAndSave: {[dbpref:`C; tbls: `S; dst:`s; generator; linked:`b;dates:`D; dateidx:`j]
+generateAndSave: {[dbpref:`s; tbls: `S; dst:`s; generator; linked:`b;dates:`D; dateidx:`j]
   d: dates dateidx;
 
   tlist: {update sym:`p#sym from `sym xasc x} each generator dateidx;
   if[linked;
     tlist: {[s;t] update master:`master!s?sym from t}[MASTER `sym] each tlist];
-  (.Q.dd[hsym `$dbpref, "/", string d] each tbls ,' `) set' .Q.en[dst] each tlist;
+  (.Q.dd[.Q.dd[dbpref;d]] each tbls ,' `) set' .Q.en[dst] each tlist;
 
   if[`trade ~ first tbls;
     :`date xcols 0!select date: d, open:first price,high:max price,
@@ -231,7 +231,7 @@ buildPersistedDB: ('[{[params]
   if[2<count params; '"Too many parameters passed to buildPersistedDB"];
   if[(::) ~ first params;
     '"Destination directory must be provided as first parameter to buildPersistedDB"];
-  dst: first params;
+  dst: hsym $[10h~type dst;`$;] dst:first params;
   p: DEFAULTS, DEFAULTS_PERSISTED;
   if[1 < count params;
     p,: processOptParam[key p; last params];
@@ -245,15 +245,14 @@ buildPersistedDB: ('[{[params]
 
   generator: generateTables[p `tbls;volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr];
   dbprefs: $[p `segmentNr; [
-    ssr[p[`segmentPattern];"{}"] each string til[dateNr] mod p `segmentNr];
-    dateNr#enlist dst];
-  dst: hsym `$dst;
+    hsym `$ssr[p[`segmentPattern];"{}"] each string til[dateNr] mod p `segmentNr];
+    dateNr#dst];
   daily: raze dbprefs generateAndSave[;p[`tbls] except `daily; dst; generator; p `linked; dates; ]' til dateNr;
 
   if[all `daily`trade in p`tbls; .Q.dd[dst;`daily`] set .Q.en[dst] daily];
   .Q.dd[dst;`master, $[p[`mastertype] ~ `splayed;`;()]] set .Q.en[dst] MASTER;
   .Q.dd[dst;`exnames] set EXNAMES;
-  if[p `segmentNr; (` sv dst,`par.txt) 0: distinct dbprefs];
+  if[p `segmentNr; .Q.dd[dst; `par.txt] 0: 1_'string distinct dbprefs];
   }; enlist]);
 
 

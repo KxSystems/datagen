@@ -1,0 +1,27 @@
+context:
+  version: "1.4.2"
+
+package:
+  name: q-kx-datagen
+  version: ${{ version }}
+
+source:
+  path: ..
+  filter:
+    exclude:
+      - recipe/**
+
+build:
+  number: 0
+  noarch: generic
+  script:
+    - mkdir -p $PREFIX/lib/q/mod/kx/datagen
+    - cp -r capmkts $PREFIX/lib/q/mod/kx/datagen/
+    - cp -r devops $PREFIX/lib/q/mod/kx/datagen/
+
+tests:
+  - script:
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/init.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/master.csv
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/devops/init.q
+    

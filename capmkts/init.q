@@ -1,3 +1,5 @@
+os: use`os;
+
 MASTER: `sym xcol ("S*SSBCHF"; enlist csv) 0: .Q.rp `:::master.csv
 
 COND: " BCEFHIKLMNOPQRTUVXZ456789";  / Sale Condition
@@ -20,8 +22,13 @@ DEFAULTS: ([
   exchopen: 09:30;   / exchange open time
   exchclose: 16:00;  / exchange close time
   quotesPerTrade: 10;     / number of quotes per trade
-  nbboPerTrade: 3
-  ]);      / number of nbbo per trade
+  nbboPerTrade: 3;     / number of nbbo per trade
+  volumeGrowth: 1.0005;      / average volume growth per day
+  priceCorrelation: 0.5;     / correlation coefficient between symbol prices
+  midPriceChangeProb: 0.3;   / probability that the mid price moves on a tick
+  spreadChangeProb: 0.15;    / probability that a spread margin changes on a tick
+  maxSpread: 0.0005         / max margin (one side) as a fraction of the mid price
+  ]);
 
 DEFAULTS_PERSISTED: ([start: .z.D-31; end: .z.D-1;
   tbls: `trade`quote`nbbo`daily;
@@ -78,23 +85,24 @@ volprof:{[x:`j]
   m,0.5*b,e
   }
 
-VEX:1.0005         / average volume growth per day
-CCF:0.5            / correlation coefficient
+/ keep the previous value unless a change event (prob p) happens
+sticky:{[p;x] x maxs til[count x]*p>count[x]?1.0}
 
 / =========================================================
 / qx index, qb/qbb/qa/qba margins, qp price, qn position
-batch:{[len:`j; p0; p1:`F; symNr:`j]
+batch:{[len:`j; p0; p1:`F; symNr:`j; midPriceChangeProb:`f; spreadChangeProb:`f; maxSpread:`f]
   d:xrnd[0.0003] len;
   qx:len?symNr;
-  qb:rnd len?1.0;
-  qa:rnd len?1.0;
-  qbb:qb & -0.02 + rnd len?1.0;
-  qba:qa & -0.02 + rnd len?1.0;
   n:(group qx) til symNr;
   s:p0*accum each d n;
   s:s + (p1-last each s)*{int01 count x} each s;
   qp:len#0.0;
-  (qp n):rnd s;
+  (qp n):rnd sticky[midPriceChangeProb] each s;
+  m:{[n;p;x] x[raze n]:raze sticky[p] each x n; x}[n;spreadChangeProb] each {x?1.0} each 4#len;
+  m:maxSpread*m;
+  m:0.01|rnd qp*/:m;
+  qb:m 0; qa:m 1;
+  qbb:qb & m 2; qba:qa & m 3;
   (qx; qb; qa; qbb; qba; qp)
   }
 
@@ -125,22 +133,22 @@ getDates:{[start:`d; end:`d; holidays]
   }
 
 / =========================================================
-makePrices: {[dateNr:`j]
+makePrices: {[dateNr:`j; priceCorrelation:`f]
   r:genConstrRandWalk[0.0375;3] each count[MASTER]#dateNr+1;
-  r:choleskycor[CCF;1,'r];
+  r:choleskycor[priceCorrelation;1,'r];
   (MASTER[`issueprice] % first each r) * r *\: 1.1 xexp int01 dateNr+2
   }
 
 / =========================================================
 / day volumes
-makeDailyVolumes: {[dateNr:`j]
+makeDailyVolumes: {[dateNr:`j; volumeGrowth:`f]
   v:genConstrRandWalk[0.03;3;dateNr];
-  a:VEX xexp neg dateNr;
+  a:volumeGrowth xexp neg dateNr;
   0.05|2&v*a+((reciprocal last v)-a)*int01 dateNr
   }
 
-generateTables: {[tbls: `S; volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade:`j); (exchopen; exchclose); symNr:`j; dateidx:`j]
-  (qx; qb; qa; qbb; qba; qp): batch[volumes[dateidx]; prices[;dateidx]; prices[; dateidx+1];  symNr];
+generateTables: {[tbls: `S; volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade:`j); (exchopen; exchclose); symNr:`j; (midPriceChangeProb:`f; spreadChangeProb:`f; maxSpread:`f); dateidx:`j]
+  (qx; qb; qa; qbb; qba; qp): batch[volumes[dateidx]; prices[;dateidx]; prices[; dateidx+1];  symNr; midPriceChangeProb; spreadChangeProb; maxSpread];
   r:asc (`timespan$exchopen)+floor (`timespan$exchclose-exchopen)*volprof count qx;
   cx:volumes[dateidx]?quotesPerTrade+nbboPerTrade;
   cn:count n:where cx=0;
@@ -200,15 +208,20 @@ processOptParam:{[allowedKeys;optparam]
 //                        exchclose:      exchange close time (default 16:00),
 //                        quotesPerTrade: number of quotes per trade (default 10),
 //                        nbboPerTrade:   number of nbbo per trade (default 3),
+//                        volumeGrowth:       average volume growth per day (default 1.0005),
+//                        priceCorrelation:   correlation coefficient between symbol prices (default 0.5),
+//                        midPriceChangeProb: probability that the mid price moves on a tick (default 0.3),
+//                        spreadChangeProb:   probability that a spread margin changes on a tick (default 0.15),
+//                        maxSpread:          max margin (one side) as a fraction of the mid price (default 0.0005),
 getInMemoryTables: ('[{[params]
   if[1<count params; '"Too many parameters passed to getInMemoryTables"];
   p: DEFAULTS;
   if[not (::) ~ first params; p,: processOptParam[key p; last params]];
 
   symNr: count MASTER;
-  volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p `nbboPerTrade) * makeDailyVolumes 1;
-  prices: makePrices 1;
-  ({update `g#sym from x} each generateTables[p `tbls; volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; 0]),
+  volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p `nbboPerTrade) * makeDailyVolumes[1; p `volumeGrowth];
+  prices: makePrices[1; p `priceCorrelation];
+  ({update `g#sym from x} each generateTables[p `tbls; volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; p `midPriceChangeProb`spreadChangeProb`maxSpread; 0]),
     (`sym xkey MASTER; EXNAMES)
   }; enlist]);
 
@@ -227,6 +240,11 @@ getInMemoryTables: ('[{[params]
 //                        segmentPattern: pattern for the segments, e.g. "/mnt/ssd{}/testdb"
 //                        quotesPerTrade: number of quotes per trade (default 10),
 //                        nbboPerTrade:   number of nbbo per trade (default 3),
+//                        volumeGrowth:       average volume growth per day (default 1.0005),
+//                        priceCorrelation:   correlation coefficient between symbol prices (default 0.5),
+//                        midPriceChangeProb: probability that the mid price moves on a tick (default 0.3),
+//                        spreadChangeProb:   probability that a spread margin changes on a tick (default 0.15),
+//                        maxSpread:          max margin (one side) as a fraction of the mid price (default 0.0005),
 buildPersistedDB: ('[{[params]
   if[2<count params; '"Too many parameters passed to buildPersistedDB"];
   if[(::) ~ first params;
@@ -240,10 +258,10 @@ buildPersistedDB: ('[{[params]
 
   dateNr: count dates: getDates[p`start; p`end; p`holidays];
   symNr: count MASTER;
-  volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p[`nbboPerTrade]) * makeDailyVolumes dateNr;
-  prices: makePrices dateNr;
+  volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p[`nbboPerTrade]) * makeDailyVolumes[dateNr; p `volumeGrowth];
+  prices: makePrices[dateNr; p `priceCorrelation];
 
-  generator: generateTables[p `tbls;volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr];
+  generator: generateTables[p `tbls;volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; p `midPriceChangeProb`spreadChangeProb`maxSpread];
   dbprefs: $[p `segmentNr; [
     hsym `$ssr[p[`segmentPattern];"{}"] each string til[dateNr] mod p `segmentNr];
     dateNr#dst];
@@ -255,5 +273,64 @@ buildPersistedDB: ('[{[params]
   if[p `segmentNr; .Q.dd[dst; `par.txt] 0: 1_'string distinct dbprefs];
   }; enlist]);
 
+tpFire: {[connH:`i; updFn; tableName:`s; rows]
+  neg[connH] (updFn; tableName; rows);
+  neg[connH] (::);
+  }
 
-export: ([getInMemoryTables; buildPersistedDB])
+RTFire: {[connH; updFn:`s; tableName:`s; rows]
+  connH (updFn; tableName; rows);
+  }
+
+NANO: 1000*1000*1000;
+waitAndFire: {[fireFn; tableName:`s; timecols:`S; rows]
+  if[0 = count rows; :()]; / no rows before start time, skip
+
+  if[null offset; startday:: `timestamp$.z.d; offset:: (.z.p-startday) - last rows`time];
+  / adjust time columns as if was generated in real-time
+  rows: ![rows; (); 0b; timecols!(+;;offset) each timecols];
+  waittime: (startday + last rows`time) - .z.p;
+  if[0 < waittime; os.sleep waittime];
+  fireFn[tableName; rows];
+  }
+
+
+// @kind function
+// @fileoverview streams in-memory table(s) to a ticker plant (TP) or a reliable transport (RT) connection handler.
+// The function will wait for the time of the last row in each batch before sending it to the TP or RT.
+// The time columns are adjusted as if the data was generated in real-time,
+// i.e. the first row is sent immediately, and subsequent rows are sent with a delay corresponding to their time difference from the first row.
+// The function will also adjust for any offset between the current time and the last row's time, so that the data is streamed as if it was generated in real-time.
+// @param params {list} list of size 2 or 3. Elements are:
+//                     The connection handler to the TP or a publisher to RT.
+//                     A batch size.
+//                     The third element, if provided, is passed to getInMemoryTables (without key updFn).
+streamToPubSub: ('[{[params]
+  if[3<count params; '"Too many parameters passed to streamToPubSub"];
+  (connH; batchsize:`j): 2#params;
+
+  tbls: DEFAULTS `tbls;
+  updFn: `.u.upd;
+  p: $[2=count params;
+    enlist (::); [
+    if[not .Q.ty[last params] in "HIJ"; [
+      if[`tbls in key last params; tbls: (last params) `tbls]];
+      if[`updFn in key last params; [
+        updFn: (last params) `updFn;
+        params[2]: `updFn _ last params]]];
+    2 _ params]];
+  res: -1 _ getInMemoryTables . p; / drop exnames
+
+  fireFn: $[-6h = type connH; tpFire; RTFire][connH; updFn];
+
+  fireFn[`master; last res];
+
+  startday:: 0Np;
+  offset:: 0Nn;
+
+  l: raze tbls (;)/:' batchsize cut/: -1 _ res;
+  (waitAndFire[fireFn; ; enlist `time;].) each l iasc {last[last x]`time} each l;
+
+  }; enlist]);
+
+export: ([getInMemoryTables; buildPersistedDB; streamToPubSub])

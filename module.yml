@@ -1,0 +1,24 @@
+name: q-kx-datagen
+description: >-
+  This module provides functions for generating synthetic data for various domains.
+homepage: https://github.com/KxSystems/datagen
+namespace: kx.datagen
+
+source:
+  repo: https://github.com/KxSystems/datagen
+  ref: 1.4.2
+  path: .
+
+license: Apache-2.0
+
+maintainers:
+  - github: KxSystems
+
+platforms:
+  - linux
+  - linux-arm
+  - mac
+  - mac-arm
+
+compatibility:
+  kdbx: ">=5.0.0"

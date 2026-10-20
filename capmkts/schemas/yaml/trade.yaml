@@ -1,0 +1,22 @@
+name: trade
+description: Trade data
+type: partitioned
+sortColsMem: [sym, time]
+sortColsDisk: [sym, time]
+columns:
+  - name: sym
+    type: symbol
+    attrMem: grouped
+    attrDisk: parted
+  - name: time
+    type: timespan
+  - name: price
+    type: float
+  - name: size
+    type: long
+  - name: stop
+    type: boolean
+  - name: cond
+    type: char
+  - name: ex
+    type: symbol

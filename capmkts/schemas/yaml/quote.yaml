@@ -1,0 +1,24 @@
+name: quote
+description: Quote data
+type: partitioned
+sortColsMem: [sym, time]
+sortColsDisk: [sym, time]
+columns:
+  - name: sym
+    type: symbol
+    attrMem: grouped
+    attrDisk: parted
+  - name: time
+    type: timespan
+  - name: bid
+    type: float
+  - name: ask
+    type: float
+  - name: bsize
+    type: long
+  - name: asize
+    type: long
+  - name: mode
+    type: char
+  - name: ex
+    type: symbol

@@ -1,5 +1,5 @@
 context:
-  version: "1.4.2"
+  version: ${{ env.get("PKG_VERSION", default="0.0.0") }}
 
 package:
   name: q-kx-datagen
@@ -19,9 +19,19 @@ build:
     - cp -r capmkts $PREFIX/lib/q/mod/kx/datagen/
     - cp -r devops $PREFIX/lib/q/mod/kx/datagen/
 
+about:
+  homepage: https://github.com/KxSystems/kx-datagen
+  repository: https://github.com/KxSystems/kx-datagen
+  license: Apache-2.0
+  license_file: LICENSE
+  summary: Synthetic data generation for kdb-X demos (capital markets and DevOps).
+  description: >-
+    Functions for generating synthetic data for various domains, including
+    capital markets trade, quote and NBBO data and DevOps cpu metric and
+    incident data, to run queries on q data.
+
 tests:
   - script:
     - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/init.q
     - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/master.csv
     - test -f ${PREFIX}/lib/q/mod/kx/datagen/devops/init.q
-    

@@ -1,0 +1,21 @@
+name: master
+description: Security master reference data
+type: basic
+primaryKeys: [sym]
+columns:
+  - name: sym
+    type: symbol
+  - name: description
+    type: string
+  - name: cusip
+    type: symbol
+  - name: securityType
+    type: symbol
+  - name: testFlag
+    type: boolean
+  - name: ex
+    type: char
+  - name: roundLot
+    type: short
+  - name: issueprice
+    type: float

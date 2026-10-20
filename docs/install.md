@@ -9,8 +9,8 @@ Follow the install instructions for [qmamba](https://github.com/KxSystems/qmamba
 qmamba:use`kx.qmamba
 qmamba.create "myenv"
 qmamba.activate "myenv"
-qmamba.install `SPECS`CHANNEL!(enlist "q-kx-datagen";enlist"kx")
-.datagen:use`kx.datagen
+qmamba.install ([SPECS: enlist "q-kx-datagen"; CHANNEL: enlist"kx"])
+.datagen: use`kx.datagen
 ```
 
 ## Installation

@@ -2,6 +2,18 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 2.0.0
+
+**Release Date**: 2026-10-20
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - new function `streamToPubSub` to stream generated data to a tickerplant (TP) or Reliable Transport (RT).
+  - more realistic `quote` and `nbbo` tables: bid/ask spreads and mid prices now stay stable for a number of ticks instead of changing on every tick, and spreads scale with the symbol's price
+  - new model parameters `volumeGrowth`, `priceCorrelation`, `midPriceChangeProb`, `spreadChangeProb`, and `maxSpread`, customizable via `getInMemoryTables` and `buildPersistedDB`
+  - q and yaml schema files are available in subdirectories of `schemas`
+
 ## 1.4.1
 
 **Release Date**: 2026-04-14

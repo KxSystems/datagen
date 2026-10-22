@@ -34,4 +34,14 @@ tests:
   - script:
     - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/init.q
     - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/master.csv
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/dbservice/init.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/dbservice/master.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/dbservice/trade.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/dbservice/quote.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/dbservice/nbbo.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/q/init.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/q/master.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/q/trade.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/q/quote.q
+    - test -f ${PREFIX}/lib/q/mod/kx/datagen/capmkts/schemas/q/nbbo.q
     - test -f ${PREFIX}/lib/q/mod/kx/datagen/devops/init.q

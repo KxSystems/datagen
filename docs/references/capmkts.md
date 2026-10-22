@@ -1,13 +1,13 @@
 # Capital market data generator
 
-This module is designed to generate synthetic capital market data, including `trade`, `quote`, and `nbbo` tables, along with instrument and exchange metadata.
+This module generates synthetic capital market data, including `trade`, `quote`, and `nbbo` tables, along with instrument and exchange metadata.
 
 ## Quickstart
 
 <details>
 <summary>Note: OS module dependency</summary>
 
-This module uses the `OS` module, which is installed by default by recent KDB-X installers. If the `OS` module is not installed, update your KDB-X environment to pick up the latest changes.
+This module uses the `OS` module, which recent KDB-X installers install by default. If the `OS` module isn't installed, update your KDB-X environment to pick up the latest changes.
 
 </details>
 
@@ -35,7 +35,7 @@ APPLE INC COM STK          | 3227
 AT&T Inc.                  | 2527
 ```
 
-To generate one month of _date-partitioned data_ and store it in a directory (e.g., `/tmp/testdb`), use the `buildPersistedDB` function:
+To generate one month of _date-partitioned data_ and store it in a directory (for example, `/tmp/testdb`), use the `buildPersistedDB` function:
 
 ```q
 buildPersistedDB "/tmp/testdb"
@@ -74,11 +74,11 @@ date       sym  time                 price size stop cond ex bid   ask
 
 ## Parameters
 
-You can pass optional parameters as a dictionary. If you pass a single number instead, it's interpreted as the `tradesPerDay` parameter.
+You can pass optional parameters as a dictionary. If you pass a single number instead, q treats it as the `tradesPerDay` parameter.
 
 ### Data density/volume
 
-You can adjust the data density (and overall data volume) by specifying the approximate number of trades per day. Note that the exact number depends on various factors, such as the number of instruments.
+You can adjust the data density (and overall data volume) by specifying the approximate number of trades per day. The exact number depends on various factors, such as the number of instruments.
 
 ```q
 (trade; quote; nbbo; master; exnames): getInMemoryTables 10000
@@ -92,7 +92,7 @@ buildPersistedDB["/tmp/testdb"; 10000]
 
 ### Date range (`start` and `end`)
 
-The `buildPersistedDB` function allows you to specify the start and end dates for the data to be generated. These dates are passed as part of a dictionary in the second parameter. For example, to generate one year of data:
+The `buildPersistedDB` function allows you to specify the start and end dates for the data to be generated. Pass these dates in a dictionary as the second parameter. For example, to generate one year of data:
 
 ```q
 buildPersistedDB["/tmp/testdb"; ([tradesPerDay: 10000; start: 2025.01.01; end: 2025.12.31])]
@@ -100,7 +100,7 @@ buildPersistedDB["/tmp/testdb"; ([tradesPerDay: 10000; start: 2025.01.01; end: 2
 
 ### Segmented database
 
-Segmented databases are also supported by `buildPersistedDB`, using the `segmentNr` and `segmentPattern` keys. For instance, to use four drives mounted at `/mnt/ssd0`, `/mnt/ssd1`, `/mnt/ssd2`, and `/mnt/ssd3`, you can use the following command:
+Segmented databases are also supported by `buildPersistedDB`, using the `segmentNr` and `segmentPattern` keys. For example, to use four drives mounted at `/mnt/ssd0`, `/mnt/ssd1`, `/mnt/ssd2`, and `/mnt/ssd3`, run:
 
 ```q
 buildPersistedDB["/tmp/testdb"; ([segmentNr: 4; segmentPattern: "/mnt/ssd{}/testdb"])]
@@ -110,24 +110,24 @@ This distributes partitions across `/mnt/ssd0/testdb`, `/mnt/ssd1/testdb`, `/mnt
 
 ### Additional settings
 
-The following parameters can be customized using a dictionary passed to `getInMemoryTables` or `buildPersistedDB` functions. Default values are provided for convenience:
+You can customize the following parameters by passing a dictionary to the `getInMemoryTables` or `buildPersistedDB` functions. The table lists the default values:
 
 | Parameter | Default | Description |
 | :--- | :--- | :--- |
 | `tradesPerDay` | `1000` | The number of trades per day. |
-| `tbls` | `` `trade`quote`nbbo`` | tables to be generated besides other kdb+ objects like table `master` and dictionary `exnames` |
+| `tbls` | `` `trade`quote`nbbo`` | Tables to generate besides other kdb+ objects like table `master` and dictionary `exnames`. |
 | `exchopen` | `9:30` | The opening time of the exchange. No trades or quotes are generated before this time. |
 | `exchclose` | `16:00` | The closing time of the exchange. No trades or quotes are generated after this time. |
 | `quotesPerTrade` | `10` | The number of quotes generated per trade. |
 | `nbboPerTrade` | `3` | The number of National Best Bid and Offer (NBBO) entries generated per trade. |
 
-The following parameters control the statistical model used to generate prices, volumes, and quotes. They can be customized using a dictionary passed to `getInMemoryTables` or `buildPersistedDB` functions. Default values are provided for convenience:
+The following parameters control the statistical model used to generate prices, volumes, and quotes. You can customize them by passing a dictionary to the `getInMemoryTables` or `buildPersistedDB` functions. The table lists the default values:
 
 | Parameter | Default | Description |
 | :--- | :--- | :--- |
 | `volumeGrowth` | `1.0005` | The average volume growth per day. |
 | `priceCorrelation` | `0.5` | The correlation coefficient between the price movements of different symbols. |
-| `midPriceChangeProb` | `0.3` | The probability that the mid price (used for trades) moves on a given tick. Lower values make prices stickier, i.e. mid prices stay the same for longer. |
+| `midPriceChangeProb` | `0.3` | The probability that the mid price (used for trades) moves on a given tick. Lower values make prices stickier, that is, mid prices stay the same for longer. |
 | `spreadChangeProb` | `0.15` | The probability that a quote's bid or ask margin changes on a given tick. Lower values make spreads stickier. |
 | `maxSpread` | `0.0005` | The maximum bid/ask margin, on one side, as a fraction of the mid price. |
 
@@ -135,17 +135,17 @@ In addition, `buildPersistedDB` accepts:
 
 | Parameter | Default | Description |
 | :--- | :--- | :--- |
-| `tbls` | `` `trade`quote`nbbo`daily`` | tables to be persisted besides other kdb+ objects like table `master` and dictionary `exnames` |
-| `linked` | `0b` | `1b` to create linked column `master` for tables `trade`, `quote` and `nbbo` |
-| `mastertype` | `flat` | Type of the master table: `flat` or `splayed` |
+| `tbls` | `` `trade`quote`nbbo`daily`` | Tables to persist besides other kdb+ objects like table `master` and dictionary `exnames`. |
+| `linked` | `0b` | Set to `1b` to create a linked column `master` for the `trade`, `quote`, and `nbbo` tables. |
+| `mastertype` | `flat` | Type of the master table: `flat` or `splayed`. |
 | `holidays` | `("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25")` | A list of holidays (in addition to weekends) for which no trading data is generated. There is no trading on some exchanges on weekends and on public holidays. This can challenge some algorithms and cause issues in downstream systems. The module supports holidays to reflect this condition. Only `buildPersistedDB` considers this parameter. |
 
 #### Example usage
 
-To customize the settings, you can pass a dictionary as shown below:
+To customize the settings, pass a dictionary:
 
 ```q
-(trade; quote; nbbo; master; exnames): getInMemoryTables ([tradesPerDay: 10000; exchopen: 7:00; exchclose: 18:00; quotesPerTrade:20; nbboPerTrade:6; volumeGrowth: 1.0002])
+(trade; quote; nbbo; master; exnames): getInMemoryTables ([tradesPerDay: 10000; exchopen: 7:00; exchclose: 18:00; quotesPerTrade: 20; nbboPerTrade: 6; volumeGrowth: 1.0002])
 ```
 
 or
@@ -164,13 +164,13 @@ buildPersistedDB[`$"/tmp/testdb"; ([tbls: `trade; mastertype: `splayed])]
 
 To replay generated data as a live feed instead of a static snapshot, use `streamToPubSub`. It generates in-memory tables with `getInMemoryTables`, publishes `master` immediately, then drip-feeds the `trade`, `quote`, and `nbbo` rows to a running tickerplant (TP) or Reliable Transport (RT) process, pacing the publishes to match the original inter-event timing.
 
-`streamToPubSub` takes a single list argument of 2 or 3 elements:
+`streamToPubSub` takes a single list argument of two or three elements:
 
 | Position | Name | Type | Description |
 | :--- | :--- | :--- | :--- |
-| 0 | `connH` | int handle or composition | Connection handle to publish to. An int handle (e.g. from `hopen`) is treated as a TP connection. A composition (e.g. an RT publish function) is treated as an RT connection. |
+| 0 | `connH` | int handle or composition | Connection handle to publish to. An int handle (for example, from `hopen`) is treated as a TP connection. A composition (for example, an RT publish function) is treated as an RT connection. |
 | 1 | `batchsize` | long | Number of rows sent per update call. |
-| 2 (optional) | — | number or dictionary | Passed through to `getInMemoryTables`: either `tradesPerDay` or a settings dictionary (see [Additional Settings](#additional-settings)). If the dictionary includes `tbls`, it selects which tables are streamed (default `` `trade`quote`nbbo``). The dictionary key `updFn` overrides the default update function name `.u.upd`. |
+| 2 (optional) | — | number or dictionary | Passed through to `getInMemoryTables`: either `tradesPerDay` or a settings dictionary (see [Additional settings](#additional-settings)). If the dictionary includes `tbls`, it selects which tables are streamed (default `` `trade`quote`nbbo``). The dictionary key `updFn` overrides the default update function name `.u.upd`. |
 
 For example, to stream data to a tickerplant listening on port 5010, in batches of 10 rows:
 
@@ -179,7 +179,23 @@ tpH: hopen 5010
 streamToPubSub[tpH; 10]
 ```
 
-Stream to a [KX Database Service](https://code.kx.com/kdb-x/services/db-service/introduction.html) via an RT publisher. The tables must be [created](https://code.kx.com/kdb-x/services/db-service/manage-tables.html#create) in DB Service before any data is published to them (see the schema creation example below):
+Stream to a [KX Database Service](https://code.kx.com/kdb-x/services/db-service/introduction.html) via an RT publisher. The tables must be [created in DB Service](https://code.kx.com/kdb-x/services/db-service/manage-tables.html#create) before any data is published to them (see "Table creation in DB Service"):
+
+<details>
+<summary>Table creation in DB Service</summary>
+
+The code below shows how to create the `master`, `trade`, `quote`, and `nbbo` tables in memory using the [DB Service client module](https://github.com/KxSystems/kdbx-db-service-q-client).
+
+```q
+dbs: use`kx.dbservice_client
+session:dbs.createSession[]
+
+dbserviceschemas: use `kx.datagen.capmkts.schemas.dbservice
+
+{session.createTable[([table: string x; tableType: "mem_only"; columns: dbserviceschemas x])]} each `master`trade`quote`nbbo
+```
+
+</details>
 
 ```bash
 $ q startq.q
@@ -188,46 +204,6 @@ q)streamToPubSub[rtPub; 10]
 ```
 
 You can get `startq.q` by unzipping [`rt.qpk`](https://code.kx.com/insights/1.20/microservices/rt/examples/run-rt-locally.html#publish).
-
-<details>
-<summary>trade, quote and nbbo table creation in DB Services</summary>
-
-The code below shows how to create the trade,quote and nbbo tables in memory using the [DB Service client module](https://github.com/KxSystems/kdbx-db-service-q-client)
-
-```q
-dbs: use`kx.dbservice_client
-session:dbs.createSession[]
-
-tradeCols: (
-  ([name: "sym"; type: "symbol"]);
-  ([name: "time"; type: "timespan"]);
-  ([name: "price"; type: "float"]);
-  ([name: "size"; type: "long"]);
-  ([name: "stop"; type: "boolean"]))
-session.createTable[([table: "trade"; type: "mem_only"; columns: tradeCols])]
-
-quoteCols: (
-  ([name: "sym"; type: "symbol"]);
-  ([name: "time"; type: "timespan"]);
-  ([name: "bid"; type: "float"]);
-  ([name: "ask"; type: "float"]);
-  ([name: "bsize"; type: "long"]);
-  ([name: "asize"; type: "long"]);
-  ([name: "mode"; type: "char"]);
-  ([name: "ex"; type: "symbol"]))
-session.createTable[([table: "quote"; type: "mem_only"; columns: quoteCols])]
-
-nbboCols: (
-  ([name: "sym"; type: "symbol"]);
-  ([name: "time"; type: "timespan"]);
-  ([name: "bid"; type: "float"]);
-  ([name: "ask"; type: "float"]);
-  ([name: "bsize"; type: "long"]);
-  ([name: "asize"; type: "long"]))
-session.createTable[([table: "nbbo"; type: "mem_only"; columns: nbboCols])]
-```
-
-</details>
 
 To control the volume and which tables are streamed, pass a third element:
 
@@ -245,6 +221,47 @@ streamToPubSub[tpH; 100; ([tradesPerDay: 50000; updFn: insert])]
 `streamToPubSub` has no return value; it publishes until every generated row has been sent, sleeping between batches to simulate real-time pacing.
 
 Performance and memory efficiency were not design goals for `streamToPubSub`; it's intended for demos rather than stress testing.
+
+## Schema support
+
+Datagen provides table schemas in various forms for integration (for example, kdb+ tick or DB Service). The schemas describe the `master`, `trade`, `quote`, and `nbbo` tables generated by `getInMemoryTables`.
+
+| Form | Location (under `capmkts/schemas`) | Use |
+| :--- | :--- | :--- |
+| q | `q` | Empty tables, for example as a [kdb+ tick](https://github.com/KxSystems/kdb-tick) schema file or to prepare in-memory tables. |
+| DB Service | `dbservice` | Column definitions for [creating tables in DB Service](https://code.kx.com/kdb-x/services/db-service/manage-tables.html#create). |
+| YAML | `yaml` | DB Service assembly definitions in YAML form, for clustered mode: name, description, table type, sort columns, column types, and attributes. |
+
+The q and DB Service schemas are modules. Each exports the four schemas keyed by table name:
+
+```q
+q)qschemas: use `kx.datagen.capmkts.schemas.q
+q)qschemas `trade
+sym time price size stop cond ex
+--------------------------------
+```
+
+```q
+q)dbserviceschemas: use `kx.datagen.capmkts.schemas.dbservice
+q)dbserviceschemas `trade
+name    colType
+------------------
+"sym"   "symbol"
+"time"  "timespan"
+"price" "float"
+"size"  "long"
+"stop"  "boolean"
+```
+
+The q schemas are empty tables whose column names and types match the generated data, so they can be used to initialize a table before publishing:
+
+```q
+trade: qschemas`trade
+```
+
+Each DB Service schema is a list of column definitions (`name` and `colType`) to pass as the `columns` of a table creation request. See the table creation example in [Streaming to a PubSub](#streaming-to-a-pubsub-tickerplant-or-reliable-transport).
+
+The YAML files are in sync with the DB Service assembly definitions and can be used in clustered mode (see the [assembly file structure](https://code.kx.com/kdb-x/services/db-service/manage-tables-clustered.html#assembly-file-structure)). They are not loaded with `use`; they are installed with the module and can be read from its `schemas/yaml` directory. `master` is a `basic` table keyed by `sym`; `trade`, `quote`, and `nbbo` are `partitioned`, sorted by `sym` and `time`, with `sym` `grouped` in memory and `parted` on disk.
 
 ## Resource requirements
 

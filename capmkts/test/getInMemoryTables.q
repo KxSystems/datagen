@@ -1,4 +1,4 @@
-([getInMemoryTables]): use `$"....capmkts";
+([getInMemoryTables]): use `....capmkts;
 
 t: use `kx.test;
 t.setDefaults ([verbose:0b])

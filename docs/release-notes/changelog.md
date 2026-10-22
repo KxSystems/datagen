@@ -2,6 +2,15 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 2.1.0
+
+**Release Date**: 2026-10-22
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - q schema files are available in submodules `schemas.dbservice` and `schemas.q`.
+
 ## 2.0.0
 
 **Release Date**: 2026-10-20

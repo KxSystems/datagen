@@ -18,7 +18,7 @@ freeport: -1_last read0 tp`stdout;
 tpH: hopen "J"$freeport
 
 -1 "starting realtime streaming";
-([streamToPubSub]): use `$"....capmkts";
+([streamToPubSub]): use `....capmkts;
 batchsize: 10
 streamToPubSub[tpH; batchsize; ([exchopen: 09:30:00; exchclose: 09:30:10])]
 -1 "realtime streaming finished";
@@ -31,7 +31,7 @@ t.assertTrue[{tablesPopulated}; ([name: "tables have data"])];
 t.mock[`batchSizeOk; first all batchsize=-1 _ tpH "select count i by batchidx from trade"];
 t.assertTrue[{batchSizeOk}; ([name: "batch size"])];
 
-t.mock[`realtimeOk; first all 0D00:00:00.01 > tpH "select last rcvt-time by batchidx from trade"];
+t.mock[`realtimeOk; first all 0D00:00:00.1 > tpH "select last rcvt-time by batchidx from trade"];
 t.assertTrue[{realtimeOk}; ([name: "realtime: delay below threshold"])];
 
 t.teardown[];

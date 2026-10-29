@@ -6,7 +6,7 @@ namespace: kx.datagen
 
 source:
   repo: https://github.com/KxSystems/datagen
-  ref: 1.4.2
+  version: 2.1.0
   path: .
 
 license: Apache-2.0

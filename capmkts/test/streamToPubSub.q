@@ -1,4 +1,4 @@
-os: use`os;
+os: use`kx.os;
 
 t: use `kx.test;
 t.setDefaults ([verbose:0b])

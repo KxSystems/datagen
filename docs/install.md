@@ -10,7 +10,8 @@ qmamba:use`kx.qmamba
 qmamba.create "myenv"
 qmamba.activate "myenv"
 qmamba.install ([SPECS: enlist "q-kx-datagen"; CHANNEL: enlist"kx"])
-.datagen: use`kx.datagen
+capmkts: use`kx.datagen.capmkts
+devops: use`kx.datagen.devops
 ```
 
 ## Installation
@@ -26,8 +27,8 @@ cp -r datagen ~/.kx/mod/kx/
 Now from anywhere you can import the `datagen` library.
 
 ```q
-q)([getInMemoryTables; buildPersistedDB]): use `kx.datagen.capmkts
-q)(trade; quote; nbbo; master; exnames): getInMemoryTables[]
+q)capmkts: use`kx.datagen.capmkts
+q)(trade; quote; nbbo; master; exnames): capmkts.getInMemoryTables[]
 q)asc select sum size by exch: exnames ex from trade where time within 10:00 10:30
 exch                                | size
 ------------------------------------| ----

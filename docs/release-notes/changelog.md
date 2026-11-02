@@ -2,6 +2,16 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 2.1.1
+
+**Release Date**: 2026-11-02
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - OS module path fix
+  - Documentation fix
+
 ## 2.1.0
 
 **Release Date**: 2026-10-22

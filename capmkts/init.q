@@ -1,4 +1,4 @@
-os: use`os;
+os: use`kx.os;
 
 MASTER: `sym xcol ("S*SSBCHF"; enlist csv) 0: .Q.rp `:::master.csv
 

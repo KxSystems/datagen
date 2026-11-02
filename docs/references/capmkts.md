@@ -7,7 +7,7 @@ This module generates synthetic capital market data, including `trade`, `quote`,
 <details>
 <summary>Note: OS module dependency</summary>
 
-This module uses the `OS` module, which recent KDB-X installers install by default. If the `OS` module isn't installed, update your KDB-X environment to pick up the latest changes.
+This module uses the [OS](https://code.kx.com/kdb-x/modules/os/os.html) module, which recent KDB-X installers install by default. If the `OS` module isn't installed, update your KDB-X environment to pick up the latest changes.
 
 </details>
 

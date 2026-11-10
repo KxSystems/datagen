@@ -9,7 +9,7 @@ columns:
     attrMem: grouped
     attrDisk: parted
   - name: time
-    type: timespan
+    type: timestamp
   - name: bid
     type: float
   - name: ask

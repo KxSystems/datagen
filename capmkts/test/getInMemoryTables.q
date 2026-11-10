@@ -31,6 +31,11 @@ t.assertError[{getInMemoryTables[2000; `dummyparameter]}; "Too many parameters p
 t.assertError[{getInMemoryTables `notadictionary}; "A numeric or a dictionary is expected as optional parameter"; ([name: "dictionary type check"])];
 t.assertError[{getInMemoryTables ([tradesPerDay: 2000; invalidkey: 3])}; "Unknown parameter(s): invalidkey"; ([name: "invalid parameter"])];
 
+/ Check if the time column can be generated as timestamp instead of timespan
+testInMemoryTables[`timetype; getInMemoryTables ([tradesPerDay: 2000; timetype: `timestamp])]
+t.assertTrue[{all "p" = .Q.ty each (trade`time; quote`time; nbbo`time)}; ([name: "timestamp time column"])];
+t.assertTrue[{all .z.D = `date$ trade`time}; ([name: "timestamp date is today"])];
+
 / Check if we can pass exchange open/close times of different formats (minute vs second)
 exchopen: 10:00;
 exchclose: 15:00:00;

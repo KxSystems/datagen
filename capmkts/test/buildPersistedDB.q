@@ -66,6 +66,27 @@ buildPersistedDB[dbdir; 2000];
 testPersistedTables[`tradesPerDay; dbdir];
 cleanup[];
 
+buildPersistedDB[dbdir; ([timetype: `timestamp])];
+testPersistedTables[`timestamp; dbdir];
+check["timestamp time column"; {"p" ~ .Q.ty (select time from trade where date=max date)`time}];
+check["timestamp date matches partition"; {d: select time, date from trade where date=max date; all (`date$d`time)=d`date}];
+cleanup[];
+
+buildPersistedDB[dbdir; ([tradesPerDay: 2000; compparam: ([trade: 16 2 6i])])];
+testPersistedTables[`compparam; dbdir];
+d: first (select distinct date from trade)`date;
+check["trade compressed"; {(2 16 6i) ~ -3#value -21!hsym `$dbdir,"/",string[d],"/trade/price"}];
+check["quote not compressed"; {0 = count -21!hsym `$dbdir,"/",string[d],"/quote/bid"}];
+cleanup[];
+
+/ Column-level compression: a dictionary of column names to compression parameters
+buildPersistedDB[dbdir; ([tradesPerDay: 2000; compparam: ([trade: ([price: 16 2 6i; size: 17 2 9i])])])];
+testPersistedTables[`compparamColumns; dbdir];
+d: first (select distinct date from trade)`date;
+check["trade price compressed"; {(2 16 6i) ~ -3#value -21!hsym `$dbdir,"/",string[d],"/trade/price"}];
+check["trade size compressed"; {(2 17 9i) ~ -3#value -21!hsym `$dbdir,"/",string[d],"/trade/size"}];
+cleanup[];
+
 buildPersistedDB[dbdir; ([linked: 1b])];
 testPersistedTables[`linked; dbdir];
 t.mock[`linkedCols; all `master = {exec first f from meta[x] where c=`master} each (trade; quote; nbbo)];

@@ -2,6 +2,17 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 2.2.0
+
+**Release Date**: 2026-11-09
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - if the master table is persisted as a flat file by `buildPersistedDB` then the `sym` column is not an enumeration
+  - new parameter `timetype` sets the type of the `time` column to `timespan` (default) or `timestamp`
+  - new parameter `compparam` for `buildPersistedDB` sets table-specific compression
+
 ## 2.1.1
 
 **Release Date**: 2026-11-02

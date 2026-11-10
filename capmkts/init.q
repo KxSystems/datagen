@@ -19,15 +19,16 @@ TRADEDON: (neg 1|count[MASTER]?count EXNAMES)?\:key EXNAMES
 DEFAULTS: ([
   tradesPerDay: 1000;
   tbls: `trade`quote`nbbo;
-  exchopen: 09:30;   / exchange open time
-  exchclose: 16:00;  / exchange close time
-  quotesPerTrade: 10;     / number of quotes per trade
-  nbboPerTrade: 3;     / number of nbbo per trade
+  exchopen: 09:30;           / exchange open time
+  exchclose: 16:00;          / exchange close time
+  quotesPerTrade: 10;        / number of quotes per trade
+  nbboPerTrade: 3;           / number of nbbo per trade
+  timetype: `timespan;       / time column type
   volumeGrowth: 1.0005;      / average volume growth per day
   priceCorrelation: 0.5;     / correlation coefficient between symbol prices
   midPriceChangeProb: 0.3;   / probability that the mid price moves on a tick
   spreadChangeProb: 0.15;    / probability that a spread margin changes on a tick
-  maxSpread: 0.0005         / max margin (one side) as a fraction of the mid price
+  maxSpread: 0.0005          / max margin (one side) as a fraction of the mid price
   ]);
 
 DEFAULTS_PERSISTED: ([start: .z.D-31; end: .z.D-1;
@@ -35,7 +36,8 @@ DEFAULTS_PERSISTED: ([start: .z.D-31; end: .z.D-1;
   mastertype: `flat;
   holidays: ("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25");
   segmentNr: 0; segmentPattern: "/tmp/mnt/ssd{}/testdata";
-  linked: 0b])
+  linked: 0b;
+  compparam: `trade`quote`nbbo`daily`master!5#enlist 3#0i])
 
 /utils
 PI:acos -1
@@ -148,7 +150,7 @@ makeDailyVolumes: {[dateNr:`j; volumeGrowth:`f]
   }
 
 generateTables: {[tbls: `S; volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade:`j); (exchopen; exchclose); symNr:`j; (midPriceChangeProb:`f; spreadChangeProb:`f; maxSpread:`f); dateidx:`j]
-  (qx; qb; qa; qbb; qba; qp): batch[volumes[dateidx]; prices[;dateidx]; prices[; dateidx+1];  symNr; midPriceChangeProb; spreadChangeProb; maxSpread];
+  (qx; qb; qa; qbb; qba; qp): batch[volumes[dateidx]; prices[;dateidx]; prices[; dateidx+1]; symNr; midPriceChangeProb; spreadChangeProb; maxSpread];
   r:asc (`timespan$exchopen)+floor (`timespan$exchclose-exchopen)*volprof count qx;
   cx:volumes[dateidx]?quotesPerTrade+nbboPerTrade;
   cn:count n:where cx=0;
@@ -168,13 +170,16 @@ generateTables: {[tbls: `S; volumes:`J; prices; (quotesPerTrade:`j; nbboPerTrade
   res
   }
 
-generateAndSave: {[dbpref:`s; tbls: `S; dst:`s; generator; linked:`b;dates:`D; dateidx:`j]
+/ compression is either a triple (table level) or a dictionary of column to triple (column level)
+saveCompr: {[path; zd; x] $[99h = type zd; (path; zd) set x; (path, zd) set x]};
+
+generateAndSave: {[dbpref:`s; tbls: `S; dst:`s; generator; (timetype; compparam); linked:`b; dates:`D; dateidx:`j]
   d: dates dateidx;
 
-  tlist: {update sym:`p#sym from `sym xasc x} each generator dateidx;
+  tlist: $[timetype ~ `timestamp; d {update time + x from y}/:; ] {update sym:`p#sym from `sym xasc x} each generator dateidx;
   if[linked;
     tlist: {[s;t] update master:`master!s?sym from t}[MASTER `sym] each tlist];
-  (.Q.dd[.Q.dd[dbpref;d]] each tbls ,' `) set' .Q.en[dst] each tlist;
+  saveCompr'[.Q.dd[.Q.dd[dbpref;d]] each tbls ,' `; compparam tbls; .Q.en[dst] each tlist];
 
   if[`trade ~ first tbls;
     :`date xcols 0!select date: d, open:first price,high:max price,
@@ -221,8 +226,8 @@ getInMemoryTables: ('[{[params]
   symNr: count MASTER;
   volumes: floor (symNr*p[`tradesPerDay]*p[`quotesPerTrade]+p `nbboPerTrade) * makeDailyVolumes[1; p `volumeGrowth];
   prices: makePrices[1; p `priceCorrelation];
-  ({update `g#sym from x} each generateTables[p `tbls; volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; p `midPriceChangeProb`spreadChangeProb`maxSpread; 0]),
-    (`sym xkey MASTER; EXNAMES)
+  res: generateTables[p `tbls; volumes; prices; p `quotesPerTrade`nbboPerTrade; p`exchopen`exchclose; symNr; p `midPriceChangeProb`spreadChangeProb`maxSpread; 0];
+  ($[`timestamp ~ p `timetype; {update time:`s#time+.z.D from x}'; ] {update `g#sym from x} each res), (`sym xkey MASTER; EXNAMES)
   }; enlist]);
 
 // @kind function
@@ -238,6 +243,9 @@ getInMemoryTables: ('[{[params]
 //                        holidays:       list of holidays (default US market holidays),
 //                        segmentNr:      number of segments
 //                        segmentPattern: pattern for the segments, e.g. "/mnt/ssd{}/testdb"
+//                        compparam:      table-specific compression parameters, dictionary keyed by table name (default no compression, 0 0 0),
+//                                        e.g. ([trade: 17 2 6i]). A value can also be a dictionary of column names to compression parameters,
+//                                        e.g. ([trade: ([price: 17 2 6i; size: 17 2 9i])]).
 //                        quotesPerTrade: number of quotes per trade (default 10),
 //                        nbboPerTrade:   number of nbbo per trade (default 3),
 //                        volumeGrowth:       average volume growth per day (default 1.0005),
@@ -253,6 +261,7 @@ buildPersistedDB: ('[{[params]
   p: DEFAULTS, DEFAULTS_PERSISTED;
   if[1 < count params;
     p,: processOptParam[key p; last params];
+    p[`compparam]: DEFAULTS_PERSISTED[`compparam], p `compparam;
     if[not p[`mastertype] in `flat`splayed;
       '"Invalid mastertype parameter, expected `flat or `splayed"]];
 
@@ -265,10 +274,13 @@ buildPersistedDB: ('[{[params]
   dbprefs: $[p `segmentNr; [
     hsym `$ssr[p[`segmentPattern];"{}"] each string til[dateNr] mod p `segmentNr];
     dateNr#dst];
-  daily: raze dbprefs generateAndSave[;p[`tbls] except `daily; dst; generator; p `linked; dates; ]' til dateNr;
+  daily: raze dbprefs generateAndSave[;p[`tbls] except `daily; dst; generator; (p `timetype; p `compparam); p `linked; dates; ]' til dateNr;
 
-  if[all `daily`trade in p`tbls; .Q.dd[dst;`daily`] set .Q.en[dst] daily];
-  .Q.dd[dst;`master, $[p[`mastertype] ~ `splayed;`;()]] set .Q.en[dst] MASTER;
+  if[all `daily`trade in p`tbls; saveCompr[.Q.dd[dst;`daily`]; p[`compparam; `daily]; .Q.en[dst] daily]];
+  $[p[`mastertype] ~ `splayed;
+    saveCompr[.Q.dd[dst; `master, `]; p[`compparam; `master]; .Q.en[dst] MASTER];
+    saveCompr[.Q.dd[dst; `master]; p[`compparam; `master]; MASTER]];
+
   .Q.dd[dst;`exnames] set EXNAMES;
   if[p `segmentNr; .Q.dd[dst; `par.txt] 0: 1_'string distinct dbprefs];
   }; enlist]);
@@ -286,7 +298,9 @@ NANO: 1000*1000*1000;
 waitAndFire: {[fireFn; tableName:`s; timecols:`S; rows]
   if[0 = count rows; :()]; / no rows before start time, skip
 
-  if[null offset; startday:: `timestamp$.z.d; offset:: (.z.p-startday) - last rows`time];
+  if[null offset;
+    startday:: $["n" ~ .Q.ty rows`time;`timestamp$.z.d; "n"$0];
+    offset:: (.z.p-startday) - last rows`time];
   / adjust time columns as if was generated in real-time
   rows: ![rows; (); 0b; timecols!(+;;offset) each timecols];
   waittime: (startday + last rows`time) - .z.p;

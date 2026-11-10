@@ -72,6 +72,15 @@ date       sym  time                 price size stop cond ex bid   ask
 ..
 ```
 
+To replay the data as a live feed instead, use `streamToPubSub` to publish the rows to a running tickerplant (TP) on port 5010, in batches of 10 rows:
+
+```q
+tpH: hopen 5010
+streamToPubSub[tpH; 10]
+```
+
+For more options, see [Streaming to a PubSub](#streaming-to-a-pubsub-tickerplant-or-reliable-transport).
+
 ## Parameters
 
 You can pass optional parameters as a dictionary. If you pass a single number instead, q treats it as the `tradesPerDay` parameter.
@@ -120,6 +129,7 @@ You can customize the following parameters by passing a dictionary to the `getIn
 | `exchclose` | `16:00` | The closing time of the exchange. No trades or quotes are generated after this time. |
 | `quotesPerTrade` | `10` | The number of quotes generated per trade. |
 | `nbboPerTrade` | `3` | The number of National Best Bid and Offer (NBBO) entries generated per trade. |
+| `timetype` | `` `timespan`` | The data type of the `time` column in the generated tables: `timespan` (time since midnight) or `timestamp` (date and time). |
 
 The following parameters control the statistical model used to generate prices, volumes, and quotes. You can customize them by passing a dictionary to the `getInMemoryTables` or `buildPersistedDB` functions. The table lists the default values:
 
@@ -138,6 +148,7 @@ In addition, `buildPersistedDB` accepts:
 | `tbls` | `` `trade`quote`nbbo`daily`` | Tables to persist besides other kdb+ objects like table `master` and dictionary `exnames`. |
 | `linked` | `0b` | Set to `1b` to create a linked column `master` for the `trade`, `quote`, and `nbbo` tables. |
 | `mastertype` | `flat` | Type of the master table: `flat` or `splayed`. |
+| `compparam` | `` `trade`quote`nbbo`daily`master!5#enlist 3#0i`` (no compression) | Table-specific compression settings for [.z.zd](https://code.kx.com/q/ref/dotz/#zzd-compressionencryption-defaults), as a dictionary keyed by table name. Each value is either a three-element integer list (logical block size as an exponent of 2, algorithm, and zip level) that applies to the whole table, or a dictionary of column names to such lists for column-level compression. Example: `([trade: 17 2 6i])`. Column-level example: `([trade: ([price: 17 2 6i; size: 0 0 0i])])`. |
 | `holidays` | `("01.01"; "01.19"; "02.16"; "05.25"; "06.19"; "07.03"; "09.07"; "10.12"; "11.11"; "11.26"; "12.25")` | A list of holidays (in addition to weekends) for which no trading data is generated. There is no trading on some exchanges on weekends and on public holidays. This can challenge some algorithms and cause issues in downstream systems. The module supports holidays to reflect this condition. Only `buildPersistedDB` considers this parameter. |
 
 #### Example usage
@@ -177,6 +188,7 @@ For example, to stream data to a tickerplant listening on port 5010, in batches 
 ```q
 tpH: hopen 5010
 streamToPubSub[tpH; 10]
+hclose tpH
 ```
 
 Stream to a [KX Database Service](https://code.kx.com/kdb-x/services/db-service/introduction.html) via an RT publisher. The tables must be [created in DB Service](https://code.kx.com/kdb-x/services/db-service/manage-tables.html#create) before any data is published to them (see "Table creation in DB Service"):
@@ -200,7 +212,7 @@ dbserviceschemas: use `kx.datagen.capmkts.schemas.dbservice
 ```bash
 $ q startq.q
 q)rtPub: .rt.pub ([path: "/tmp/rtpub"; stream: "data"; cluster: enlist ":localhost:5002"; publisher_id: "datagen"])
-q)streamToPubSub[rtPub; 10]
+q)streamToPubSub[rtPub; 10; ([timetype: `timestamp])]
 ```
 
 You can get `startq.q` by unzipping [`rt.qpk`](https://code.kx.com/insights/1.20/microservices/rt/examples/run-rt-locally.html#publish).
@@ -247,7 +259,7 @@ q)dbserviceschemas `trade
 name    colType
 ------------------
 "sym"   "symbol"
-"time"  "timespan"
+"time"  "timestamp"
 "price" "float"
 "size"  "long"
 "stop"  "boolean"
@@ -262,6 +274,13 @@ trade: qschemas`trade
 Each DB Service schema is a list of column definitions (`name` and `colType`) to pass as the `columns` of a table creation request. See the table creation example in [Streaming to a PubSub](#streaming-to-a-pubsub-tickerplant-or-reliable-transport).
 
 The YAML files are in sync with the DB Service assembly definitions and can be used in clustered mode (see the [assembly file structure](https://code.kx.com/kdb-x/services/db-service/manage-tables-clustered.html#assembly-file-structure)). They are not loaded with `use`; they are installed with the module and can be read from its `schemas/yaml` directory. `master` is a `basic` table keyed by `sym`; `trade`, `quote`, and `nbbo` are `partitioned`, sorted by `sym` and `time`, with `sym` `grouped` in memory and `parted` on disk.
+
+<details>
+<summary>Time column type</summary>
+
+kdb+ tick typically uses the `timespan` type for the `time` column, which stores the time since midnight. The date comes from the partition. DB Services supports the `timestamp` type for the `time` column, which stores the date and time together. The DB Service schemas above use `timestamp`. Set the `timetype` parameter to choose the type for generated data.
+
+</details>
 
 ## Resource requirements
 

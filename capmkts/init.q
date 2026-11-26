@@ -1,5 +1,3 @@
-os: use`kx.os;
-
 MASTER: `sym xcol ("S*SSBCHF"; enlist csv) 0: .Q.rp `:::master.csv
 
 COND: " BCEFHIKLMNOPQRTUVXZ456789";  / Sale Condition
@@ -343,6 +341,7 @@ streamToPubSub: ('[{[params]
   offset:: 0Nn;
 
   l: raze tbls (;)/:' batchsize cut/: -1 _ res;
+  os:: use`kx.os;
   (waitAndFire[fireFn; ; enlist `time;].) each l iasc {last[last x]`time} each l;
 
   }; enlist]);

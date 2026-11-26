@@ -2,6 +2,15 @@
 
 _This page documents the version history of the KDB-X Datagen Module, including released versions, fixes, and improvements._
 
+## 2.2.1
+
+**Release Date**: 2026-11-26
+
+**Fixes and Improvements**:
+
+- Capital Markets domain:
+  - the OS module is loaded only by `streamToPubSub`, so `getInMemoryTables` and `buildPersistedDB` no longer require it
+
 ## 2.2.0
 
 **Release Date**: 2026-11-09
